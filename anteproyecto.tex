@@ -1,0 +1,168 @@
+\documentclass[12pt]{article}
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[utf8]{inputenc}
+  \usepackage[T1]{fontenc}
+\else
+  \usepackage{fontspec}
+\fi
+\usepackage[spanish, es-tabla]{babel}
+\usepackage[margin=1in]{geometry}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{microtype}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=blue,
+  citecolor=black
+}
+
+\setlist[itemize]{leftmargin=*, itemsep=0.35em}
+
+\newcommand{\institucion}{Universidad de Costa Rica}
+\newcommand{\campus}{Ciudad Universitaria Rodrigo Facio}
+\newcommand{\facultad}{Facultad de Ciencias Básicas}
+\newcommand{\escuela}{Escuela de Física}
+\newcommand{\curso}{Mecánica Estadística Computacional}
+\newcommand{\tituloanteproyecto}{Anteproyecto de Investigación}
+\newcommand{\titulo}{Evaluación de Predicciones Monte Carlo para Analizar la Efectividad de Medidas No Farmacológicas ante la Propagación de COVID-19}
+\newcommand{\autor}{Nombre del estudiante}
+\newcommand{\lugarfecha}{San José, 2026.}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    {\large \institucion \par}
+    {\large \campus \par}
+    {\large \facultad \par}
+    {\large \escuela \par}
+
+    \vspace{2.5cm}
+
+    {\Large \curso \par}
+
+    \vspace{1.8cm}
+
+    {\Large \tituloanteproyecto \par}
+
+    \vspace{0.8cm}
+
+    {\Large \titulo \par}
+
+    \vfill
+
+    {\large \autor \par}
+
+    \vspace{1.5cm}
+
+    {\large \lugarfecha \par}
+\end{titlepage}
+
+\section{Pregunta de Investigación y Justificación}
+
+\subsection{Pregunta de Investigación}
+
+\noindent
+\textbf{\textit{¿En qué medida las predicciones obtenidas mediante el procedimiento Monte Carlo propuesto por Xie (2020), al compararse con datos reales de contagio, recuperación y densidad poblacional por zona y por periodo, permiten identificar cuáles medidas no farmacológicas ---como el aislamiento, el uso de mascarillas y el distanciamiento social--- reducen con mayor efectividad la transmisión de COVID-19?}}
+
+\subsection{Justificación}
+
+El estudio de la propagación de COVID-19 continúa siendo relevante como caso de referencia para comprender fenómenos epidémicos donde la transmisión depende de interacciones sociales, cambios de comportamiento y políticas públicas aplicadas en distintos momentos. En este contexto, los modelos estocásticos ofrecen una ventaja importante frente a aproximaciones puramente deterministas, ya que permiten representar explícitamente la incertidumbre asociada a la ocurrencia de nuevos contagios y a la variabilidad temporal de la transmisión.
+
+El artículo \textit{A novel Monte Carlo simulation procedure for modelling COVID-19 spread over time} plantea una estrategia basada en simulación Monte Carlo para describir la dinámica de contagio mediante tasas de infección variables en el tiempo, junto con distribuciones probabilísticas para modelar tanto la cantidad de personas contagiadas por cada caso activo como el momento en que dichos contagios ocurren. Esta propuesta constituye una referencia adecuada para desarrollar un análisis aplicado, porque su estructura puede adaptarse a series temporales observadas y permite contrastar escenarios de intervención.
+
+El presente anteproyecto propone tomar ese artículo como punto de partida metodológico para comparar predicciones simuladas con datos reales observados en zonas específicas. La meta no es únicamente reproducir un modelo existente, sino utilizarlo como herramienta analítica para explorar qué medidas no farmacológicas se asocian con reducciones más claras en la velocidad de transmisión. Para ello, se plantea recopilar información temporal sobre población expuesta, densidad poblacional efectiva, número de personas infectadas, recuperadas y, cuando sea posible, periodos de implementación de restricciones sanitarias.
+
+Este enfoque es pertinente porque permite vincular la simulación con evidencia empírica. Al poner en relación las curvas generadas por el modelo con la evolución real de los casos, se podrá analizar si ciertos cambios en la trayectoria del brote coinciden con la introducción o el refuerzo de medidas como aislamiento, obligatoriedad de mascarillas o reducción de aforos. De este modo, el proyecto combina modelado computacional, análisis de datos y evaluación comparativa de políticas públicas.
+
+\newpage
+
+\section{Objetivos}
+
+\subsection{Objetivo General}
+
+Evaluar la capacidad explicativa de un modelo de simulación Monte Carlo, basado en el procedimiento propuesto por Xie (2020), para comparar predicciones epidemiológicas con datos reales de COVID-19 y analizar la efectividad relativa de distintas medidas no farmacológicas en zonas específicas.
+
+\subsection{Objetivos Específicos}
+
+\begin{itemize}
+\item Adaptar el procedimiento Monte Carlo del artículo de referencia a un conjunto de datos temporales de COVID-19 organizados por zona geográfica y periodo.
+\item Recopilar y estructurar series de tiempo con variables relevantes, tales como personas infectadas, recuperadas, casos activos, densidad poblacional efectiva y momentos de aplicación de medidas sanitarias.
+\item Modelar la probabilidad diaria de contagio como un componente aleatorio dependiente del tiempo y sensible a cambios en las condiciones de movilidad, contacto social e intervención pública.
+\item Comparar las trayectorias simuladas con los datos reales observados para identificar discrepancias, patrones recurrentes y posibles ajustes del modelo.
+\item Analizar, mediante escenarios comparativos, cuáles medidas no farmacológicas parecen asociarse con una mayor reducción de la transmisión en el tiempo.
+\end{itemize}
+
+\newpage
+
+\section{Marco Teórico}
+
+La simulación de epidemias puede abordarse desde modelos deterministas, como los de tipo SIR, o desde modelos estocásticos que incorporan explícitamente la incertidumbre del proceso de contagio. En los modelos deterministas, la evolución del sistema queda fijada por ecuaciones diferenciales y parámetros medios; en cambio, los modelos estocásticos consideran que la transmisión ocurre a través de eventos aleatorios cuya realización concreta puede variar incluso bajo condiciones iniciales similares. Esta segunda perspectiva resulta especialmente útil cuando se desea representar fluctuaciones diarias, heterogeneidad espacial y cambios abruptos en el comportamiento social.
+
+El trabajo de Xie (2020) se ubica dentro de esa tradición estocástica. Su propuesta modela la propagación de COVID-19 como un proceso de puntos en el que cada persona infecciosa puede generar un número aleatorio de nuevos contagios. La cantidad de infecciones secundarias se representa mediante una distribución de Poisson con media dependiente de una tasa temporal \(R_t\), mientras que el momento en que ocurre cada nuevo contagio se modela mediante una distribución binomial negativa con media \(\mu_T\). Esta construcción permite simular tanto la cantidad como el tiempo de aparición de los nuevos casos.
+
+Un punto central del modelo es que \(R_t\) no se considera constante. La tasa de transmisión cambia con el tiempo para reflejar variaciones en el contacto social, la respuesta institucional y el comportamiento de la población. En el artículo de referencia, la selección de patrones para \(R_t\) combina ajuste a datos observados con interpretación de los efectos de intervenciones públicas. Esta idea es especialmente valiosa para el presente proyecto, porque permite relacionar medidas como el aislamiento, el uso de mascarillas o el distanciamiento social con reducciones observables en la intensidad de la transmisión.
+
+Desde el punto de vista empírico, el análisis de medidas no farmacológicas requiere series de tiempo comparables. No basta con observar el número acumulado de casos; es necesario considerar variables que cambian día con día, tales como el número de personas activamente infectadas, recuperadas, la población potencialmente expuesta y la densidad poblacional efectiva en contextos específicos. Aunque la densidad poblacional total de una zona es relativamente estable, la densidad efectiva de interacción puede variar con restricciones de movilidad, cierres parciales y cambios en los patrones de circulación.
+
+El proyecto también se apoya en la idea de validación por contraste entre simulación y observación. Un modelo Monte Carlo no debe entenderse solo como una herramienta para producir curvas hipotéticas, sino como un mecanismo para evaluar hasta qué punto una estructura probabilística logra reproducir patrones reales. Si el modelo captura adecuadamente cambios en la tendencia de contagios tras la introducción de ciertas medidas, entonces puede utilizarse para explorar escenarios alternativos y discutir la efectividad relativa de esas intervenciones. Si no lo hace, las discrepancias mismas aportan información sobre variables omitidas o supuestos que deben refinarse.
+
+\newpage
+
+\section{Aplicación de la Técnica de Monte Carlo al Problema}
+
+\subsection{Recopilación y Organización de Datos}
+
+La primera etapa consistirá en construir una base de datos temporal para zonas específicas de análisis. Se buscará registrar, para cada unidad espacial y cada fecha, variables como casos nuevos, casos activos, personas recuperadas, fallecimientos, población total o estimada, densidad poblacional y periodos en que entraron en vigor medidas como cuarentenas, obligatoriedad de mascarillas o restricciones de aforo. La organización en series de tiempo permitirá observar la evolución del problema y comparar periodos anteriores y posteriores a cada intervención.
+
+\subsection{Construcción del Modelo Estocástico}
+
+Tomando como referencia el artículo de Xie (2020), se propondrá un modelo en el que cada persona infectada tenga una probabilidad de contagiar a otras personas en cada día del periodo de estudio. La parte aleatoria del problema se representará precisamente en esa posibilidad diaria de transmisión. En lugar de asumir que todos los contagios siguen una trayectoria fija, se permitirá que el número de infecciones nuevas surja de distribuciones probabilísticas calibradas con los datos observados.
+
+De manera conceptual, el procedimiento será el siguiente:
+
+\begin{itemize}
+\item Se parte de un número inicial de personas infectadas en una zona y fecha determinadas.
+\item Para cada día, se estima una tasa de transmisión asociada al contexto del periodo, la cual puede disminuir o aumentar según las medidas vigentes y la dinámica social observada.
+\item Cada caso activo puede generar nuevos contagios de forma aleatoria, y el momento exacto de esos contagios también se modela probabilísticamente.
+\item El proceso se repite durante toda la ventana temporal de estudio para obtener trayectorias simuladas de casos nuevos, casos activos y acumulados.
+\item La simulación se ejecuta múltiples veces para obtener bandas de variación y no una única curva rígida.
+\end{itemize}
+
+Este enfoque es coherente con Monte Carlo porque el comportamiento del sistema se explora a través de muchas realizaciones posibles del mismo proceso aleatorio. Así, en vez de producir una sola predicción puntual, se obtiene una distribución de resultados plausibles.
+
+\subsection{Comparación con Datos Reales}
+
+Una vez generadas múltiples trayectorias simuladas, estas se compararán con las series reales de cada zona. La comparación permitirá examinar si el modelo logra reproducir momentos de crecimiento acelerado, picos de contagio, periodos de estabilización y descensos posteriores. También permitirá medir si las modificaciones temporales de la tasa de transmisión, introducidas para representar políticas sanitarias concretas, son consistentes con los cambios efectivamente observados en los datos.
+
+La utilidad principal de esta comparación radica en que las medidas no farmacológicas pueden interpretarse como factores que alteran la estructura de contacto entre personas. Si, por ejemplo, una reducción sostenida en la transmisión coincide con periodos de mayor uso de mascarillas o con restricciones más estrictas de movilidad, el modelo puede capturar ese cambio mediante una disminución de la tasa de infección y contrastarlo con la realidad observada.
+
+\subsection{Evaluación de la Efectividad de Medidas}
+
+Finalmente, el proyecto comparará distintos escenarios temporales y espaciales para determinar cuáles medidas parecen asociarse con mejores resultados. No se asumirá de entrada que una sola intervención explica toda la dinámica del brote; más bien, se analizará cómo combinaciones de aislamiento, mascarillas y distanciamiento social modifican la evolución de la curva epidémica. La interpretación de resultados se apoyará en la proximidad entre las simulaciones y los datos reales, así como en la consistencia del comportamiento estimado de la tasa de transmisión a lo largo del tiempo.
+
+Este procedimiento permitirá construir una evaluación comparativa con fundamento cuantitativo, donde la simulación Monte Carlo funcione como puente entre la formulación teórica del contagio y la evidencia empírica disponible.
+
+\newpage
+
+\section{Referencias}
+
+Hale, T., Angrist, N., Goldszmidt, R., Kira, B., Petherick, A., Phillips, T., Webster, S., Cameron-Blake, E., Hallas, L., Majumdar, S., \& Tatlow, H. (2021). A global panel database of pandemic policies (Oxford COVID-19 Government Response Tracker). \textit{Nature Human Behaviour}, 5, 529--538.
+
+\medskip
+
+Mathieu, E., Ritchie, H., Rod{\'e}s-Guirao, L., Appel, C., Giattino, C., Hasell, J., Macdonald, B., Dattani, S., Beltekian, D., Ortiz-Ospina, E., \& Roser, M. (2020). Coronavirus Pandemic (COVID-19). \textit{Our World in Data}.\\
+\url{https://ourworldindata.org/coronavirus}
+
+\medskip
+
+Xie, G. (2020). A novel Monte Carlo simulation procedure for modelling COVID-19 spread over time. \textit{Scientific Reports}, 10, 13120.\\
+\url{https://doi.org/10.1038/s41598-020-70091-1}
+
+\end{document}
