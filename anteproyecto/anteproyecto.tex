@@ -101,34 +101,23 @@ El trabajo de Xie \cite{Xie2020} plantea una estrategia basada en simulación
 Monte Carlo para describir la dinámica de contagio mediante tasas de infección
 variables en el tiempo, junto con distribuciones probabilísticas para modelar
 tanto la cantidad de personas contagiadas por cada caso activo como el momento
-en que dichos contagios ocurren. Esta propuesta constituye una referencia
-adecuada para desarrollar un análisis aplicado, porque su estructura puede
-adaptarse a series temporales observadas y permite contrastar escenarios de
-intervención.
+en que dichos contagios ocurren.
 
 El presente anteproyecto propone tomar ese artículo como punto de partida
 metodológico para comparar predicciones simuladas con datos reales observados en
 zonas específicas. La meta no es únicamente reproducir un modelo existente,
 sino utilizarlo como herramienta analítica para explorar qué medidas se asocian
-con reducciones más claras en la velocidad de transmisión. En este documento,
-el término \textit{medidas} se usa en un sentido amplio: incluye
-intervenciones sanitarias, regulatorias y de comportamiento, tales como
-aislamiento, uso de mascarillas, restricciones de aforo, campañas de
-vacunación, pruebas diagnósticas o combinaciones de estas. Esta aclaración
-evita restringir el análisis a medidas no farmacológicas y mantiene la
-coherencia entre la pregunta de investigación, los objetivos y la estrategia
-empírica.
+con reducciones más claras en la velocidad de transmisión. Este enfoque es
+pertinente porque permite vincular la simulación con evidencia empírica. Para
+ello, el estudio puede apoyarse en fuentes comparables de series epidemiológicas
+y de registro de políticas públicas, como \textit{Our World in Data}
+\cite{owid-coronavirus} y el
+\textit{Oxford COVID-19 Government Response Tracker} \cite{Hale2021}.
 
-Este enfoque es pertinente porque permite vincular la simulación con evidencia
-empírica. Para ello, el estudio puede apoyarse en fuentes comparables de series
-epidemiológicas y de registro de políticas públicas, como \textit{Our World in
-Data} \cite{owid-coronavirus} y el \textit{Oxford COVID-19 Government Response
-Tracker} \cite{Hale2021}. Al poner en relación las curvas generadas por el
-modelo con la evolución real de los casos y con la cronología de las medidas
-aplicadas, se podrá analizar qué intervenciones o combinaciones de
-intervenciones se asocian con cambios relevantes en la transmisión. De este
-modo, el proyecto combina modelado computacional, análisis de datos y
-evaluación comparativa de medidas sanitarias y de política pública.
+Al poner en relación las curvas generadas por el modelo con la evolución real de
+los casos y con la cronología de las medidas aplicadas, se podrá analizar qué
+intervenciones o combinaciones de intervenciones se asocian con cambios
+relevantes en la transmisión.
 
 \newpage
 
@@ -136,7 +125,7 @@ evaluación comparativa de medidas sanitarias y de política pública.
 
 \subsection{Objetivo General}
 
-Evaluar la capacidad explicativa de un modelo de simulación Monte Carlo, basado
+Evaluar la capacidad de un modelo de simulación Monte Carlo, basado
 en el procedimiento propuesto por Xie \cite{Xie2020}, para comparar
 predicciones epidemiológicas con datos reales de COVID-19 y analizar la
 asociación entre distintas medidas y la reducción de la transmisión en zonas
@@ -146,8 +135,7 @@ específicas.
 
 \begin{itemize}
   \item Adaptar el procedimiento Monte Carlo de Xie \cite{Xie2020} a un
-        conjunto de datos temporales de COVID-19 organizado por zona geográfica
-        y periodo.
+        conjunto de datos temporales de COVID-19 organizado por zona geográfica.
   \item Recopilar y estructurar series de tiempo con variables relevantes,
         tales como personas infectadas, recuperadas, casos activos, densidad
         poblacional efectiva y momentos de aplicación de medidas documentadas
@@ -177,11 +165,11 @@ incluso bajo condiciones iniciales similares. Esta segunda perspectiva resulta
 especialmente útil cuando se desea representar fluctuaciones diarias,
 heterogeneidad espacial y cambios abruptos en el comportamiento social.
 
-El trabajo de Xie \cite{Xie2020} se ubica dentro de esa tradición estocástica.
-Su propuesta modela la propagación de COVID-19 como un proceso de puntos en el
+En el trabajo de Xie \cite{Xie2020},
+la propuesta modela la propagación de COVID-19 como un proceso de puntos en el
 que cada persona infecciosa puede generar un número aleatorio de nuevos
 contagios. La cantidad de infecciones secundarias se representa mediante una
-distribución de Poisson con media dependiente de una tasa temporal \(R_t\),
+distribución de Poisson de una tasa de infección \(R_t\),
 mientras que el momento en que ocurre cada nuevo contagio se modela mediante
 una distribución binomial negativa con media \(\mu_T\). Esta construcción
 permite simular tanto la cantidad como el tiempo de aparición de los nuevos
@@ -206,15 +194,13 @@ efectiva de interacción puede variar con restricciones de movilidad, cierres
 parciales, campañas de vacunación y cambios en los patrones de circulación.
 Para documentar estos factores, resultan particularmente útiles bases de datos
 como \textit{Our World in Data} \cite{owid-coronavirus}, que reúne indicadores
-epidemiológicos comparables, y el \textit{Oxford COVID-19 Government Response
-Tracker} \cite{Hale2021}, que codifica la evolución de distintas políticas
-públicas.
+epidemiológicos comparables, y el
+\textit{Oxford COVID-19 Government Response Tracker} \cite{Hale2021},
+que codifica la evolución de distintas políticas públicas.
 
 El proyecto también se apoya en la idea de validación por contraste entre
-simulación y observación. Un modelo Monte Carlo no debe entenderse solo como
-una herramienta para producir curvas hipotéticas, sino como un mecanismo para
-evaluar hasta qué punto una estructura probabilística logra reproducir patrones
-reales. Si el modelo captura adecuadamente cambios en la tendencia de contagios
+simulación y observación.
+Si el modelo captura adecuadamente cambios en la tendencia de contagios
 tras la introducción de ciertas medidas, entonces puede utilizarse para
 explorar escenarios alternativos y discutir su efectividad relativa. Si no lo
 hace, las discrepancias mismas aportan información sobre variables omitidas o
