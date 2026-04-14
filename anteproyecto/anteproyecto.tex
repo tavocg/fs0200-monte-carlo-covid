@@ -12,9 +12,10 @@
 \usepackage[spanish, es-tabla]{babel}
 \usepackage[margin=1in]{geometry}
 \usepackage{enumitem}
-\usepackage[round,authoryear]{natbib}
 \usepackage{hyperref}
 \usepackage{microtype}
+\usepackage{biblatex}
+\addbibresource{refs.bib}
 
 \hypersetup{
   colorlinks=true,
@@ -128,7 +129,7 @@ El proyecto también se apoya en la idea de validación por contraste entre simu
 
 \newpage
 
-\section{Aplicación de la Técnica de Monte Carlo al Problema}
+\section{Aplicación de la Técnica de Monte Carlo}
 
 \subsection{Recopilación y Organización de Datos}
 
@@ -164,7 +165,6 @@ Este procedimiento permitirá construir una evaluación comparativa con fundamen
 
 \newpage
 
-\bibliographystyle{apalike}
-\bibliography{refs}
+\printbibliography
 
 \end{document}
