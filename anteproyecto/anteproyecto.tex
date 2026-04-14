@@ -25,8 +25,6 @@
 }
 
 \setlist[itemize]{leftmargin=*, itemsep=0.35em}
-\renewcommand{\refname}{Referencias}
-
 \newcommand{\institucion}{Universidad de Costa Rica}
 \newcommand{\campus}{Ciudad Universitaria Rodrigo Facio}
 \newcommand{\facultad}{Facultad de Ciencias Básicas}
@@ -40,42 +38,40 @@
 \begin{document}
 
 \begin{titlepage}
-\begin{center}
-	\LARGE \textbf{\textsc{\institucion}}
-        \Large
-        \\[1cm]
-        \textsc{\campus}
-        \\[0.1cm]
-        \textsc{\facultad}
-        \\[0.1cm]
-        \textsc{\escuela} \\
-        \vspace*{20 mm}
-	\LARGE{\textsc{\textbf{\curso}}}
-\end{center}
+  \begin{center}
+    \LARGE \textbf{\textsc{\institucion}}
+    \Large
+    \\[1cm]
+    \textsc{\campus}
+    \\[0.1cm]
+    \textsc{\facultad}
+    \\[0.1cm]
+    \textsc{\escuela} \\
+    \vspace*{20 mm}
+    \LARGE{\textsc{\textbf{\curso}}}
+  \end{center}
 
-\vspace{2cm}
+  \vspace{2cm}
 
-\hrulefill
+  \hrulefill
+  \begin{center}
+    \large \textbf{\textsc{\tituloanteproyecto}}
+    \\[0.5cm]
+    \textsc{\titulo}
+  \end{center}
+  \hrulefill
 
-\begin{center}
-	\large \textbf{\textsc{\tituloanteproyecto}}
-        \\[0.5cm]
-        \textsc{\titulo}
-\end{center}
+  \vfill
 
-\hrulefill
+  \begin{center}
+    \large \textbf{\autor}
+  \end{center}
 
-\vfill
+  \vspace{1cm}
 
-\begin{center}
-        \large \textbf{\autor}
-\end{center}
-
-\vspace{1cm}
-
-\begin{center}
-        \textit{\lugarfecha}
-\end{center}
+  \begin{center}
+    \textit{\lugarfecha}
+  \end{center}
 \end{titlepage}
 
 \section{Pregunta de Investigación y Justificación}
@@ -83,13 +79,32 @@
 \subsection{Pregunta de Investigación}
 
 \noindent
-\textbf{\textit{¿En qué medida las predicciones obtenidas mediante un modelo de simulación Monte Carlo basado en el procedimiento propuesto por Xie \cite{Xie2020}, al contrastarse con datos reales de contagio, recuperación, densidad poblacional efectiva y cronología de medidas por zona y por periodo, permiten identificar qué medidas se asocian con una mayor reducción de la transmisión de COVID-19?}}
+\textit{
+  ¿En qué medida las predicciones obtenidas mediante un modelo de simulación
+  Monte Carlo basado en el procedimiento propuesto por Xie \cite{Xie2020}, al
+  contrastarse con datos reales de contagio, recuperación, densidad poblacional
+  efectiva y cronología de medidas por zona y por periodo, permiten identificar
+  qué medidas se asocian con una mayor reducción de la transmisión de COVID-19?
+}
 
 \subsection{Justificación}
 
-El estudio de la propagación de COVID-19 continúa siendo relevante como caso de referencia para comprender fenómenos epidémicos donde la transmisión depende de interacciones sociales, cambios de comportamiento y políticas públicas aplicadas en distintos momentos. Los modelos estocásticos ofrecen una ventaja importante frente a aproximaciones puramente deterministas, ya que permiten representar explícitamente la incertidumbre asociada a la ocurrencia de nuevos contagios y a la variabilidad temporal de la transmisión.
+El estudio de la propagación de COVID-19 continúa siendo relevante como caso de
+referencia para comprender fenómenos epidémicos donde la transmisión depende de
+interacciones sociales, cambios de comportamiento y políticas públicas aplicadas
+en distintos momentos. Los modelos estocásticos ofrecen una ventaja importante
+frente a aproximaciones puramente deterministas, ya que permiten representar
+explícitamente la incertidumbre asociada a la ocurrencia de nuevos contagios y a
+la variabilidad temporal de la transmisión.
 
-El trabajo de Xie \cite{Xie2020} plantea una estrategia basada en simulación Monte Carlo para describir la dinámica de contagio mediante tasas de infección variables en el tiempo, junto con distribuciones probabilísticas para modelar tanto la cantidad de personas contagiadas por cada caso activo como el momento en que dichos contagios ocurren. Esta propuesta constituye una referencia adecuada para desarrollar un análisis aplicado, porque su estructura puede adaptarse a series temporales observadas y permite contrastar escenarios de intervención.
+El trabajo de Xie \cite{Xie2020} plantea una estrategia basada en simulación
+Monte Carlo para describir la dinámica de contagio mediante tasas de infección
+variables en el tiempo, junto con distribuciones probabilísticas para modelar
+tanto la cantidad de personas contagiadas por cada caso activo como el momento
+en que dichos contagios ocurren. Esta propuesta constituye una referencia
+adecuada para desarrollar un análisis aplicado, porque su estructura puede
+adaptarse a series temporales observadas y permite contrastar escenarios de
+intervención.
 
 El presente anteproyecto propone tomar ese artículo como punto de partida metodológico para comparar predicciones simuladas con datos reales observados en zonas específicas. La meta no es únicamente reproducir un modelo existente, sino utilizarlo como herramienta analítica para explorar qué medidas se asocian con reducciones más claras en la velocidad de transmisión. En este documento, el término \textit{medidas} se usa en un sentido amplio: incluye intervenciones sanitarias, regulatorias y de comportamiento, tales como aislamiento, uso de mascarillas, restricciones de aforo, campañas de vacunación, pruebas diagnósticas o combinaciones de estas. Esta aclaración evita restringir el análisis a medidas no farmacológicas y mantiene la coherencia entre la pregunta de investigación, los objetivos y la estrategia empírica.
 
