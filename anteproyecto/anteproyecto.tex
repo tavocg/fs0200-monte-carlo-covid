@@ -157,9 +157,8 @@ específicas.
 
 La simulación de epidemias puede abordarse desde modelos deterministas, como
 los de tipo SIR, o desde modelos estocásticos que incorporan explícitamente la
-incertidumbre del proceso de contagio. En los modelos deterministas, la
-evolución del sistema queda fijada por ecuaciones diferenciales y parámetros
-medios; en cambio, los modelos estocásticos consideran que la transmisión
+incertidumbre del proceso de contagio.
+Los modelos estocásticos consideran que la transmisión
 ocurre a través de eventos aleatorios cuya realización concreta puede variar
 incluso bajo condiciones iniciales similares. Esta segunda perspectiva resulta
 especialmente útil cuando se desea representar fluctuaciones diarias,
@@ -251,8 +250,6 @@ De manera conceptual, el procedimiento será el siguiente:
   \item El proceso se repite durante toda la ventana temporal de estudio para
         obtener trayectorias simuladas de casos nuevos, casos activos y
         acumulados.
-  \item La simulación se ejecuta múltiples veces para obtener bandas de
-        variación y no una única curva rígida.
 \end{itemize}
 
 Este enfoque es coherente con Monte Carlo porque el comportamiento del sistema
