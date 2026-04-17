@@ -31,7 +31,7 @@
 \newcommand{\escuela}{Escuela de Física}
 \newcommand{\curso}{Mecánica Estadística Computacional}
 \newcommand{\tituloanteproyecto}{Anteproyecto de Investigación}
-\newcommand{\titulo}{Evaluación de Predicciones Monte Carlo para Analizar la Efectividad de Medidas contra la Propagación de COVID-19}
+\newcommand{\titulo}{Simulación Monte Carlo de Casos Nuevos de COVID-19 por Zona Geográfica}
 \newcommand{\autor}{Gustavo A. Calvo Gutiérrez}
 \newcommand{\lugarfecha}{San José, 2026.}
 
@@ -80,22 +80,21 @@
 
 \noindent
 \textit{
-  ¿En qué medida las predicciones obtenidas mediante un modelo de simulación
-  Monte Carlo basado en el procedimiento propuesto por Xie \cite{Xie2020}, al
-  contrastarse con datos reales de contagio, recuperación, densidad poblacional
-  efectiva y cronología de medidas por zona y por periodo, permiten identificar
-  qué medidas se asocian con una mayor reducción de la transmisión de COVID-19?
+  ¿Cómo puede un modelo de simulación Monte Carlo, aplicado por zona
+  geográfica y basado en el procedimiento propuesto por Xie \cite{Xie2020},
+  estimar la cantidad esperada de casos nuevos de COVID-19 a partir de series
+  temporales observadas?
 }
 
 \subsection{Justificación}
 
 El estudio de la propagación de COVID-19 continúa siendo relevante como caso de
 referencia para comprender fenómenos epidémicos donde la transmisión depende de
-interacciones sociales, cambios de comportamiento y políticas públicas aplicadas
-en distintos momentos. Los modelos estocásticos ofrecen una ventaja importante
-frente a aproximaciones puramente deterministas, ya que permiten representar
-explícitamente la incertidumbre asociada a la ocurrencia de nuevos contagios y a
-la variabilidad temporal de la transmisión.
+interacciones sociales y de variaciones temporales en la dinámica de contagio.
+Los modelos estocásticos ofrecen una ventaja importante frente a aproximaciones
+puramente deterministas, ya que permiten representar explícitamente la
+incertidumbre asociada a la ocurrencia de nuevos contagios y a la variabilidad
+temporal de la transmisión.
 
 El trabajo de Xie \cite{Xie2020} plantea una estrategia basada en simulación
 Monte Carlo para describir la dinámica de contagio mediante tasas de infección
@@ -104,20 +103,16 @@ tanto la cantidad de personas contagiadas por cada caso activo como el momento
 en que dichos contagios ocurren.
 
 El presente anteproyecto propone tomar ese artículo como punto de partida
-metodológico para comparar predicciones simuladas con datos reales observados en
-zonas específicas. La meta no es únicamente reproducir un modelo existente,
-sino utilizarlo como herramienta analítica para explorar qué medidas se asocian
-con reducciones más claras en la velocidad de transmisión. Este enfoque es
-pertinente porque permite vincular la simulación con evidencia empírica. Para
-ello, el estudio puede apoyarse en fuentes comparables de series epidemiológicas
-y de registro de políticas públicas, como \textit{Our World in Data}
-\cite{owid-coronavirus} y el
-\textit{Oxford COVID-19 Government Response Tracker} \cite{Hale2021}.
-
-Al poner en relación las curvas generadas por el modelo con la evolución real de
-los casos y con la cronología de las medidas aplicadas, se podrá analizar qué
-intervenciones o combinaciones de intervenciones se asocian con cambios
-relevantes en la transmisión.
+metodológico para realizar simulaciones por zona geográfica y estimar, a partir
+de múltiples corridas aleatorias, la cantidad esperada de casos nuevos en cada
+periodo. La meta no es evaluar la efectividad de medidas sanitarias ni comparar
+intervenciones, sino construir una herramienta de simulación capaz de generar
+trayectorias plausibles de contagio y resumirlas mediante su valor esperado.
+Este enfoque es pertinente porque permite vincular la simulación con series
+epidemiológicas observadas y estudiar la variabilidad inherente al proceso de
+transmisión. Para ello, el estudio puede apoyarse en fuentes comparables de
+datos epidemiológicos, como \textit{Our World in Data}
+\cite{owid-coronavirus}.
 
 \newpage
 
@@ -125,11 +120,9 @@ relevantes en la transmisión.
 
 \subsection{Objetivo General}
 
-Evaluar la capacidad de un modelo de simulación Monte Carlo, basado
-en el procedimiento propuesto por Xie \cite{Xie2020}, para comparar
-predicciones epidemiológicas con datos reales de COVID-19 y analizar la
-asociación entre distintas medidas y la reducción de la transmisión en zonas
-específicas.
+Desarrollar un modelo de simulación Monte Carlo, basado en el procedimiento
+propuesto por Xie \cite{Xie2020}, para estimar la cantidad esperada de casos
+nuevos de COVID-19 en distintas zonas geográficas.
 
 \subsection{Objetivos Específicos}
 
@@ -137,18 +130,17 @@ específicas.
   \item Adaptar el procedimiento Monte Carlo de Xie \cite{Xie2020} a un
         conjunto de datos temporales de COVID-19 organizado por zona geográfica.
   \item Recopilar y estructurar series de tiempo con variables relevantes,
-        tales como personas infectadas, recuperadas, casos activos, densidad
-        poblacional efectiva y momentos de aplicación de medidas documentadas
-        en fuentes comparables \cite{owid-coronavirus,Hale2021}.
+        tales como casos nuevos, personas infectadas, recuperadas, casos
+        activos y población de referencia por zona, utilizando fuentes
+        comparables \cite{owid-coronavirus}.
   \item Modelar la probabilidad diaria de contagio como un componente aleatorio
-        dependiente del tiempo y sensible a cambios en las condiciones de
-        movilidad, contacto social e implementación de medidas.
+        dependiente del tiempo y calibrado con la evolución observada de los
+        contagios en cada zona.
   \item Comparar las trayectorias simuladas con los datos reales observados
         para identificar discrepancias, patrones recurrentes y posibles ajustes
         del modelo.
-  \item Analizar, mediante escenarios comparativos, qué medidas o
-        combinaciones de medidas parecen asociarse con una mayor reducción de
-        la transmisión a lo largo del tiempo.
+  \item Estimar, a partir de múltiples simulaciones, el valor esperado de
+        casos nuevos por periodo en cada zona analizada.
 \end{itemize}
 
 \newpage
@@ -176,36 +168,27 @@ casos.
 
 Un punto central del modelo es que \(R_t\) no se considera constante. La tasa
 de transmisión cambia con el tiempo para reflejar variaciones en el contacto
-social, la respuesta institucional y el comportamiento de la población. En el
-artículo de referencia, la selección de patrones para \(R_t\) combina ajuste a
-datos observados con interpretación de los efectos de intervenciones públicas
+social y el comportamiento de la población. En el artículo de referencia, la
+selección de patrones para \(R_t\) se apoya en el ajuste a datos observados
 \cite{Xie2020}. Esta idea es especialmente valiosa para el presente proyecto,
-porque permite relacionar cambios en la intensidad de la transmisión con la
-introducción, el retiro o la combinación de distintas medidas.
+porque permite representar cambios en la intensidad de la transmisión sin
+abandonar el carácter probabilístico del modelo.
 
-Desde el punto de vista empírico, el análisis de medidas requiere series de
-tiempo comparables. No basta con observar el número acumulado de casos; es
-necesario considerar variables que cambian día con día, tales como el número de
-personas activamente infectadas, recuperadas, la población potencialmente
-expuesta y la densidad poblacional efectiva en contextos específicos. Aunque la
-densidad poblacional total de una zona es relativamente estable, la densidad
-efectiva de interacción puede variar con restricciones de movilidad, cierres
-parciales, campañas de vacunación y cambios en los patrones de circulación.
-Para documentar estos factores, resultan particularmente útiles bases de datos
-como \textit{Our World in Data} \cite{owid-coronavirus}, que reúne indicadores
-epidemiológicos comparables, y el
-\textit{Oxford COVID-19 Government Response Tracker} \cite{Hale2021},
-que codifica la evolución de distintas políticas públicas.
+Desde el punto de vista empírico, la simulación requiere series de tiempo
+comparables. No basta con observar el número acumulado de casos; es necesario
+considerar variables que cambian día con día, tales como el número de personas
+activamente infectadas, recuperadas, la población potencialmente expuesta y los
+casos nuevos reportados en cada zona. Para documentar estos factores, resultan
+particularmente útiles bases de datos como \textit{Our World in Data}
+\cite{owid-coronavirus}, que reúne indicadores epidemiológicos comparables.
 
 El proyecto también se apoya en la idea de validación por contraste entre
 simulación y observación.
-Si el modelo captura adecuadamente cambios en la tendencia de contagios
-tras la introducción de ciertas medidas, entonces puede utilizarse para
-explorar escenarios alternativos y discutir su efectividad relativa. Si no lo
-hace, las discrepancias mismas aportan información sobre variables omitidas o
-supuestos que deben refinarse. En consecuencia, la interpretación de resultados
-se planteará en términos de asociación y consistencia empírica, no como una
-demostración causal concluyente.
+Si el modelo captura adecuadamente la tendencia general de contagios y la
+variación de los casos nuevos en cada zona, entonces puede utilizarse para
+obtener estimaciones esperadas a partir de muchas realizaciones del proceso
+aleatorio. Si no lo hace, las discrepancias mismas aportan información sobre
+variables omitidas o supuestos que deben refinarse.
 
 \newpage
 
@@ -216,14 +199,9 @@ demostración causal concluyente.
 La primera etapa consistirá en construir una base de datos temporal para zonas
 específicas de análisis. Se buscará registrar, para cada unidad espacial y cada
 fecha, variables como casos nuevos, casos activos, personas recuperadas,
-fallecimientos, población total o estimada, densidad poblacional efectiva y
-periodos en que entraron en vigor distintas medidas. Entre estas medidas pueden
-incluirse cuarentenas, obligatoriedad de mascarillas, restricciones de aforo,
-campañas de vacunación u otras intervenciones registradas sistemáticamente en
-fuentes como \textit{Our World in Data} \cite{owid-coronavirus} y el
-\textit{Oxford COVID-19 Government Response Tracker} \cite{Hale2021}. La
-organización en series de tiempo permitirá observar la evolución del problema y
-comparar periodos anteriores y posteriores a cada intervención.
+fallecimientos y población total o estimada. La organización en series de
+tiempo permitirá observar la evolución del problema dentro de cada zona y usar
+esa información como base para calibrar el modelo estocástico.
 
 \subsection{Construcción del Modelo Estocástico}
 
@@ -241,9 +219,8 @@ De manera conceptual, el procedimiento será el siguiente:
   \item Se parte de un número inicial de personas infectadas en una zona y
         fecha determinadas.
   \item Para cada día, se estima una tasa de transmisión asociada al contexto
-        del periodo, la cual puede disminuir o aumentar según las medidas
-        vigentes, la dinámica social observada y otras condiciones relevantes
-        documentadas en los datos.
+        del periodo y calibrada con el comportamiento observado de los datos en
+        esa zona.
   \item Cada caso activo puede generar nuevos contagios de forma aleatoria, y
         el momento exacto de esos contagios también se modela
         probabilísticamente.
@@ -252,43 +229,11 @@ De manera conceptual, el procedimiento será el siguiente:
         acumulados.
 \end{itemize}
 
-Este enfoque es coherente con Monte Carlo porque el comportamiento del sistema
-se explora a través de muchas realizaciones posibles del mismo proceso
-aleatorio. Así, en vez de producir una sola predicción puntual, se obtiene una
-distribución de resultados plausibles.
-
-\subsection{Comparación con Datos Reales}
-
-Una vez generadas múltiples trayectorias simuladas, estas se compararán con las
-series reales de cada zona. La comparación permitirá examinar si el modelo
-logra reproducir momentos de crecimiento acelerado, picos de contagio, periodos
-de estabilización y descensos posteriores. También permitirá medir si las
-modificaciones temporales de la tasa de transmisión, introducidas para
-representar políticas sanitarias concretas, son consistentes con los cambios
-efectivamente observados en los datos.
-
-La utilidad principal de esta comparación radica en que las medidas pueden
-interpretarse como factores que alteran la estructura de contacto entre
-personas o la probabilidad de que un contacto resulte en contagio. Si, por
-ejemplo, una reducción sostenida en la transmisión coincide con periodos de
-mayor uso de mascarillas, restricciones más estrictas de movilidad o aumentos
-en la cobertura de vacunación, el modelo puede capturar ese cambio mediante una
-disminución de la tasa de infección y contrastarlo con la realidad observada.
-
-\subsection{Evaluación de la Efectividad de Medidas}
-
-Finalmente, el proyecto comparará distintos escenarios temporales y espaciales
-para determinar cuáles medidas parecen asociarse con mejores resultados. No se
-asumirá de entrada que una sola intervención explica toda la dinámica del
-brote; más bien, se analizará cómo distintas medidas, tomadas de forma
-individual o combinada, modifican la evolución de la curva epidémica. La
-interpretación de resultados se apoyará en la proximidad entre las simulaciones
-y los datos reales, así como en la consistencia del comportamiento estimado de
-la tasa de transmisión a lo largo del tiempo.
-
-Este procedimiento permitirá construir una evaluación comparativa con
-fundamento cuantitativo, donde la simulación Monte Carlo funcione como puente
-entre la formulación teórica del contagio y la evidencia empírica disponible.
+Una vez generadas múltiples trayectorias simuladas, estas se compararán con los
+datos reales de cada zona para verificar si el modelo reproduce de forma
+razonable la evolución observada. A partir del conjunto de resultados
+obtenidos, se calculará el promedio de casos nuevos por periodo, el cual se
+interpretará como una estimación del valor esperado buscado.
 
 \newpage
 
