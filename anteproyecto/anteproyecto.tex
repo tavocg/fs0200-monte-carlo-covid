@@ -14,6 +14,7 @@
 \usepackage{enumitem}
 \usepackage{hyperref}
 \usepackage{microtype}
+\usepackage{amsmath}
 \usepackage{biblatex}
 \addbibresource{refs.bib}
 
@@ -166,6 +167,27 @@ una distribución binomial negativa con media \(\mu_T\). Esta construcción
 permite simular tanto la cantidad como el tiempo de aparición de los nuevos
 casos.
 
+En el código suplementario del artículo, \(R_t\) se usa como la tasa de
+infección, mientras que la cantidad de casos nuevos diarios se registra por
+separado en el vector \texttt{kk}. Para mantener esa misma lógica y evitar
+confusiones, en este anteproyecto se definirá \(K_{z,t}\) como la variable
+aleatoria que representa la cantidad de casos nuevos en la zona \(z\) durante
+el día \(t\), e \(I_{z,t}\) como el número de casos infecciosos presentes en
+esa misma zona y momento. Siguiendo la idea básica del artículo de
+Xie \cite{Xie2020}, se tomará \(R_t\) como la tasa de infección diaria; al
+trabajar por zonas, esta notación se adaptará como \(R_{z,t}\). Así, una
+formulación simple del modelo es
+\[
+  K_{z,t} \sim \operatorname{Poisson}(R_{z,t} I_{z,t}),
+\]
+por lo que el valor esperado de casos nuevos queda dado por
+\[
+  E[K_{z,t}] = R_{z,t} I_{z,t}.
+\]
+En consecuencia, el objetivo principal de la simulación será aproximar
+\(E[K_{z,t}]\), es decir, la cantidad esperada de casos nuevos para cada zona y
+cada periodo.
+
 Un punto central del modelo es que \(R_t\) no se considera constante. La tasa
 de transmisión cambia con el tiempo para reflejar variaciones en el contacto
 social y el comportamiento de la población. En el artículo de referencia, la
@@ -212,6 +234,16 @@ problema se representará precisamente en esa posibilidad diaria de transmisión
 En lugar de asumir que todos los contagios siguen una trayectoria fija, se
 permitirá que el número de infecciones nuevas surja de distribuciones
 probabilísticas calibradas con los datos observados.
+
+Bajo esta notación, la simulación Monte Carlo produce realizaciones
+\[
+  K_{z,t}^{(1)}, K_{z,t}^{(2)}, \dots, K_{z,t}^{(N)},
+\]
+y el valor de expectación de casos nuevos
+\[
+  E[K_{z,t}] \approx
+  \sum_{k=1}^{N} \frac{K_{z,t}^{(k)}}{N}.
+\]
 
 De manera conceptual, el procedimiento será el siguiente:
 
