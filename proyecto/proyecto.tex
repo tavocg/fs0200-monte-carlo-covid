@@ -14,6 +14,9 @@
 \usepackage{enumitem}
 \usepackage{hyperref}
 \usepackage{microtype}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
 \usepackage{biblatex}
 \addbibresource{refs.bib}
 
@@ -25,13 +28,14 @@
 }
 
 \setlist[itemize]{leftmargin=*, itemsep=0.35em}
+\graphicspath{{proyecto/figures/}{figures/}}
 \newcommand{\institucion}{Universidad de Costa Rica}
 \newcommand{\campus}{Ciudad Universitaria Rodrigo Facio}
 \newcommand{\facultad}{Facultad de Ciencias Básicas}
 \newcommand{\escuela}{Escuela de Física}
 \newcommand{\curso}{Mecánica Estadística Computacional}
 \newcommand{\tituloanteproyecto}{Proyecto de Investigación}
-\newcommand{\titulo}{Evaluación de Predicciones Monte Carlo para Analizar la Efectividad de Medidas contra la Propagación de COVID-19}
+\newcommand{\titulo}{Calibración Monte Carlo de Pesos de Medidas Sanitarias en Curvas de COVID-19}
 \newcommand{\autor}{Gustavo A. Calvo Gutiérrez}
 \newcommand{\lugarfecha}{San José, 2026.}
 
@@ -80,44 +84,35 @@
 
 \noindent
 \textit{
-  ¿En qué medida las predicciones obtenidas mediante un modelo de simulación
-  Monte Carlo basado en el procedimiento propuesto por Xie \cite{Xie2020}, al
-  contrastarse con datos reales de contagio, recuperación, densidad poblacional
-  efectiva y cronología de medidas por zona y por periodo, permiten identificar
-  qué medidas se asocian con una mayor reducción de la transmisión de COVID-19?
+  ¿Cómo puede utilizarse una calibración Monte Carlo para aproximar los pesos
+  relativos de distintas medidas sanitarias en la dinámica observada de casos
+  nuevos de COVID-19 por zona geográfica?
 }
 
 \subsection{Justificación}
 
 El estudio de la propagación de COVID-19 continúa siendo relevante como caso de
-referencia para comprender fenómenos epidémicos donde la transmisión depende de
-interacciones sociales, cambios de comportamiento y políticas públicas aplicadas
-en distintos momentos. Los modelos estocásticos ofrecen una ventaja importante
-frente a aproximaciones puramente deterministas, ya que permiten representar
-explícitamente la incertidumbre asociada a la ocurrencia de nuevos contagios y a
-la variabilidad temporal de la transmisión.
+referencia para analizar fenómenos epidémicos donde la transmisión depende de
+interacciones sociales, políticas públicas y variaciones temporales en el
+comportamiento de la población. Los modelos estocásticos permiten representar
+explícitamente incertidumbre, explorar múltiples escenarios posibles y estudiar
+qué combinaciones de parámetros son compatibles con los datos observados.
 
 El trabajo de Xie \cite{Xie2020} plantea una estrategia basada en simulación
 Monte Carlo para describir la dinámica de contagio mediante tasas de infección
-variables en el tiempo, junto con distribuciones probabilísticas para modelar
-tanto la cantidad de personas contagiadas por cada caso activo como el momento
-en que dichos contagios ocurren.
+variables en el tiempo y distribuciones probabilísticas para modelar nuevos
+casos. Este proyecto toma esa idea como punto de partida, pero desplaza el
+énfasis desde la predicción puntual hacia la calibración de parámetros: las
+medidas sanitarias se incorporan como covariables cuyos pesos se tratan como
+variables aleatorias.
 
-El presente anteproyecto propone tomar ese artículo como punto de partida
-metodológico para comparar predicciones simuladas con datos reales observados en
-zonas específicas. La meta no es únicamente reproducir un modelo existente,
-sino utilizarlo como herramienta analítica para explorar qué medidas se asocian
-con reducciones más claras en la velocidad de transmisión. Este enfoque es
-pertinente porque permite vincular la simulación con evidencia empírica. Para
-ello, el estudio puede apoyarse en fuentes comparables de series epidemiológicas
-y de registro de políticas públicas, como \textit{Our World in Data}
-\cite{owid-coronavirus} y el
-\textit{Oxford COVID-19 Government Response Tracker} \cite{Hale2021}.
-
-Al poner en relación las curvas generadas por el modelo con la evolución real de
-los casos y con la cronología de las medidas aplicadas, se podrá analizar qué
-intervenciones o combinaciones de intervenciones se asocian con cambios
-relevantes en la transmisión.
+La utilidad del enfoque consiste en generar muchas combinaciones posibles de
+pesos, producir una curva esperada de casos nuevos para cada combinación y
+conservar las simulaciones que más se aproximan a las curvas reales. Los pesos
+de esas simulaciones aceptadas permiten construir una aproximación empírica de
+qué medidas reciben mayor importancia dentro del modelo. La interpretación debe
+ser cuidadosa: estos pesos no demuestran causalidad, sino compatibilidad entre
+un conjunto de supuestos y los datos disponibles.
 
 \newpage
 
@@ -125,170 +120,310 @@ relevantes en la transmisión.
 
 \subsection{Objetivo General}
 
-Evaluar la capacidad de un modelo de simulación Monte Carlo, basado
-en el procedimiento propuesto por Xie \cite{Xie2020}, para comparar
-predicciones epidemiológicas con datos reales de COVID-19 y analizar la
-asociación entre distintas medidas y la reducción de la transmisión en zonas
-específicas.
+Estimar, mediante calibración Monte Carlo, pesos relativos asociados a medidas
+sanitarias registradas durante la pandemia de COVID-19, evaluando qué
+combinaciones de pesos reproducen mejor las curvas observadas de casos nuevos
+por zona geográfica.
 
 \subsection{Objetivos Específicos}
 
 \begin{itemize}
-  \item Adaptar el procedimiento Monte Carlo de Xie \cite{Xie2020} a un
-        conjunto de datos temporales de COVID-19 organizado por zona geográfica.
-  \item Recopilar y estructurar series de tiempo con variables relevantes,
-        tales como personas infectadas, recuperadas, casos activos, densidad
-        poblacional efectiva y momentos de aplicación de medidas documentadas
-        en fuentes comparables \cite{owid-coronavirus,Hale2021}.
-  \item Modelar la probabilidad diaria de contagio como un componente aleatorio
-        dependiente del tiempo y sensible a cambios en las condiciones de
-        movilidad, contacto social e implementación de medidas.
-  \item Comparar las trayectorias simuladas con los datos reales observados
-        para identificar discrepancias, patrones recurrentes y posibles ajustes
-        del modelo.
-  \item Analizar, mediante escenarios comparativos, qué medidas o
-        combinaciones de medidas parecen asociarse con una mayor reducción de
-        la transmisión a lo largo del tiempo.
+  \item Adaptar el procedimiento Monte Carlo de Xie \cite{Xie2020} a un modelo
+        donde la tasa de infección depende de medidas sanitarias observadas.
+  \item Construir series temporales de casos nuevos, casos infecciosos
+        aproximados y medidas sanitarias por zona geográfica.
+  \item Tratar los pesos de las medidas sanitarias como variables aleatorias y
+        explorar el espacio de parámetros mediante simulaciones repetidas.
+  \item Seleccionar las simulaciones con menor error respecto a las curvas
+        observadas de casos nuevos.
+  \item Resumir los pesos aceptados mediante medias e intervalos percentiles
+        para comparar la importancia relativa de las medidas dentro del modelo.
 \end{itemize}
 
 \newpage
 
 \section{Marco Teórico}
 
-La simulación de epidemias puede abordarse desde modelos deterministas, como
-los de tipo SIR, o desde modelos estocásticos que incorporan explícitamente la
-incertidumbre del proceso de contagio.
-Los modelos estocásticos consideran que la transmisión
-ocurre a través de eventos aleatorios cuya realización concreta puede variar
-incluso bajo condiciones iniciales similares. Esta segunda perspectiva resulta
-especialmente útil cuando se desea representar fluctuaciones diarias,
-heterogeneidad espacial y cambios abruptos en el comportamiento social.
+La simulación de epidemias puede abordarse mediante modelos deterministas, como
+los de tipo SIR, o mediante modelos estocásticos que incorporan incertidumbre en
+los procesos de transmisión. En un modelo estocástico, la cantidad de contagios
+nuevos no se considera fija, sino el resultado de un proceso aleatorio cuya
+intensidad depende de las condiciones del periodo.
 
-En el trabajo de Xie \cite{Xie2020},
-la propuesta modela la propagación de COVID-19 como un proceso de puntos en el
-que cada persona infecciosa puede generar un número aleatorio de nuevos
-contagios. La cantidad de infecciones secundarias se representa mediante una
-distribución de Poisson de una tasa de infección \(R_t\),
-mientras que el momento en que ocurre cada nuevo contagio se modela mediante
-una distribución binomial negativa con media \(\mu_T\). Esta construcción
-permite simular tanto la cantidad como el tiempo de aparición de los nuevos
-casos.
+En Xie \cite{Xie2020}, la propagación de COVID-19 se modela como un proceso en
+el que cada persona infecciosa puede generar un número aleatorio de contagios.
+La cantidad de infecciones secundarias se representa mediante una distribución
+de Poisson con una tasa de infección \(R_t\). En este proyecto se conserva esa
+estructura básica:
+\[
+  K_{z,t} \sim \operatorname{Poisson}(R_{z,t} I_{z,t}),
+\]
+donde \(K_{z,t}\) es la cantidad de casos nuevos en la zona \(z\) durante el
+día \(t\), e \(I_{z,t}\) es una aproximación del número de personas
+infecciosas.
 
-Un punto central del modelo es que \(R_t\) no se considera constante. La tasa
-de transmisión cambia con el tiempo para reflejar variaciones en el contacto
-social, la respuesta institucional y el comportamiento de la población. En el
-artículo de referencia, la selección de patrones para \(R_t\) combina ajuste a
-datos observados con interpretación de los efectos de intervenciones públicas
-\cite{Xie2020}. Esta idea es especialmente valiosa para el presente proyecto,
-porque permite relacionar cambios en la intensidad de la transmisión con la
-introducción, el retiro o la combinación de distintas medidas.
+La diferencia central de este trabajo es que \(R_{z,t}\) se modela como una
+función de medidas sanitarias observadas. Si \(X_{j,z,t}\) representa la
+intensidad normalizada de la medida \(j\) en la zona \(z\) y fecha \(t\), se
+plantea:
+\[
+  R_{z,t} =
+  \exp\left(
+    \alpha_z - \sum_{j=1}^{p} \beta_j X_{j,z,t-\ell}
+  \right),
+\]
+donde \(\alpha_z\) representa una intensidad base de transmisión, \(\beta_j\)
+es el peso de la medida \(j\), y \(\ell\) es un rezago temporal. En este avance
+se utiliza un rezago de 14 días para reflejar que una medida sanitaria no
+debería afectar los casos reportados de forma inmediata.
 
-Desde el punto de vista empírico, el análisis de medidas requiere series de
-tiempo comparables. No basta con observar el número acumulado de casos; es
-necesario considerar variables que cambian día con día, tales como el número de
-personas activamente infectadas, recuperadas, la población potencialmente
-expuesta y la densidad poblacional efectiva en contextos específicos. Aunque la
-densidad poblacional total de una zona es relativamente estable, la densidad
-efectiva de interacción puede variar con restricciones de movilidad, cierres
-parciales, campañas de vacunación y cambios en los patrones de circulación.
-Para documentar estos factores, resultan particularmente útiles bases de datos
-como \textit{Our World in Data} \cite{owid-coronavirus}, que reúne indicadores
-epidemiológicos comparables, y el
-\textit{Oxford COVID-19 Government Response Tracker} \cite{Hale2021},
-que codifica la evolución de distintas políticas públicas.
-
-El proyecto también se apoya en la idea de validación por contraste entre
-simulación y observación.
-Si el modelo captura adecuadamente cambios en la tendencia de contagios
-tras la introducción de ciertas medidas, entonces puede utilizarse para
-explorar escenarios alternativos y discutir su efectividad relativa. Si no lo
-hace, las discrepancias mismas aportan información sobre variables omitidas o
-supuestos que deben refinarse. En consecuencia, la interpretación de resultados
-se planteará en términos de asociación y consistencia empírica, no como una
-demostración causal concluyente.
+Los pesos \(\beta_j\) se tratan como variables aleatorias. En lugar de fijarlos
+de antemano, se generan muchas combinaciones posibles mediante Monte Carlo. Cada
+combinación produce una trayectoria esperada de casos nuevos, que luego se
+compara con la curva observada. Las combinaciones con menor error se conservan
+como simulaciones aceptadas. Esta lógica es cercana a una calibración por
+rechazo o a una forma simple de \textit{Approximate Bayesian Computation}, en la
+que se retienen los parámetros que generan resultados suficientemente cercanos a
+los datos.
 
 \newpage
 
-\section{Aplicación de la Técnica de Monte Carlo}
+\section{Metodología}
 
-\subsection{Recopilación y Organización de Datos}
+\subsection{Fuente de Datos y Zonas Analizadas}
 
-La primera etapa consistirá en construir una base de datos temporal para zonas
-específicas de análisis. Se buscará registrar, para cada unidad espacial y cada
-fecha, variables como casos nuevos, casos activos, personas recuperadas,
-fallecimientos, población total o estimada, densidad poblacional efectiva y
-periodos en que entraron en vigor distintas medidas. Entre estas medidas pueden
-incluirse cuarentenas, obligatoriedad de mascarillas, restricciones de aforo,
-campañas de vacunación u otras intervenciones registradas sistemáticamente en
-fuentes como \textit{Our World in Data} \cite{owid-coronavirus} y el
-\textit{Oxford COVID-19 Government Response Tracker} \cite{Hale2021}. La
-organización en series de tiempo permitirá observar la evolución del problema y
-comparar periodos anteriores y posteriores a cada intervención.
+Se utilizaron archivos \texttt{fullwithnotes} del \textit{Oxford COVID-19
+Government Response Tracker} \cite{Hale2021}. El análisis se restringió a
+filas nacionales, es decir, a observaciones con jurisdicción nacional total
+(\texttt{NAT\_TOTAL}). Las zonas analizadas corresponden a Australia, Brasil,
+Canadá, China, Reino Unido, India y Estados Unidos. La Tabla~\ref{tab:zonas}
+resume la cobertura temporal.
 
-\subsection{Construcción del Modelo Estocástico}
+\begin{table}[htbp]
+  \centering
+  \caption{Zonas geográficas incluidas en el análisis.}
+  \label{tab:zonas}
+  \resizebox{\textwidth}{!}{\input{tables/zonas.tex}}
+\end{table}
 
-Tomando como referencia el trabajo de Xie \cite{Xie2020}, se propondrá un
-modelo en el que cada persona infectada tenga una probabilidad de contagiar a
-otras personas en cada día del periodo de estudio. La parte aleatoria del
-problema se representará precisamente en esa posibilidad diaria de transmisión.
-En lugar de asumir que todos los contagios siguen una trayectoria fija, se
-permitirá que el número de infecciones nuevas surja de distribuciones
-probabilísticas calibradas con los datos observados.
+\subsection{Variables Epidemiológicas}
 
-De manera conceptual, el procedimiento será el siguiente:
+Los casos nuevos diarios se obtuvieron como diferencia entre casos confirmados
+acumulados consecutivos:
+\[
+  k_{z,t} = C_{z,t} - C_{z,t-1}.
+\]
+Los valores negativos generados por correcciones administrativas se reemplazaron
+por cero. Para reducir fluctuaciones de reporte se calculó un promedio móvil de
+siete días, denotado \(\overline{k}_{z,t}\).
+
+Como los archivos utilizados no contienen una serie directa de personas
+recuperadas ni de casos activos, el número de casos infecciosos se aproximó con
+la suma de casos nuevos durante los 14 días previos:
+\[
+  I_{z,t} = \sum_{s=t-14}^{t-1} k_{z,s}.
+\]
+Esta aproximación funciona como exposición epidemiológica del modelo.
+
+\subsection{Medidas Sanitarias Seleccionadas}
+
+Se seleccionó un subconjunto de medidas sanitarias directamente relacionadas
+con contacto social, movilidad y prevención:
 
 \begin{itemize}
-  \item Se parte de un número inicial de personas infectadas en una zona y
-        fecha determinadas.
-  \item Para cada día, se estima una tasa de transmisión asociada al contexto
-        del periodo, la cual puede disminuir o aumentar según las medidas
-        vigentes, la dinámica social observada y otras condiciones relevantes
-        documentadas en los datos.
-  \item Cada caso activo puede generar nuevos contagios de forma aleatoria, y
-        el momento exacto de esos contagios también se modela
-        probabilísticamente.
-  \item El proceso se repite durante toda la ventana temporal de estudio para
-        obtener trayectorias simuladas de casos nuevos, casos activos y
-        acumulados.
+  \item cierre de escuelas;
+  \item cierre de lugares de trabajo;
+  \item cancelación de eventos públicos;
+  \item restricciones a reuniones;
+  \item requisitos de quedarse en casa;
+  \item restricciones a movilidad interna;
+  \item controles de viajes internacionales;
+  \item uso de mascarillas;
+  \item política de vacunación.
 \end{itemize}
 
-Este enfoque es coherente con Monte Carlo porque el comportamiento del sistema
-se explora a través de muchas realizaciones posibles del mismo proceso
-aleatorio. Así, en vez de producir una sola predicción puntual, se obtiene una
-distribución de resultados plausibles.
+Cada variable se normalizó entre 0 y 1 dentro de cada zona, dividiendo por su
+máximo observado. Luego se aplicó un rezago de 14 días antes de incorporarla al
+modelo.
 
-\subsection{Comparación con Datos Reales}
+\subsection{Calibración Monte Carlo de Pesos}
 
-Una vez generadas múltiples trayectorias simuladas, estas se compararán con las
-series reales de cada zona. La comparación permitirá examinar si el modelo
-logra reproducir momentos de crecimiento acelerado, picos de contagio, periodos
-de estabilización y descensos posteriores. También permitirá medir si las
-modificaciones temporales de la tasa de transmisión, introducidas para
-representar políticas sanitarias concretas, son consistentes con los cambios
-efectivamente observados en los datos.
+Para cada zona se generaron \(1500\) candidatos de pesos:
+\[
+  \beta_j \sim U(0, 0.8).
+\]
+Dado un vector de pesos \(\boldsymbol{\beta}\), se estimó \(\alpha_z\) para que
+la tasa media implícita fuera compatible con la tasa empírica observada:
+\[
+  \widehat{R}_{z,t}^{obs} =
+  \frac{\overline{k}_{z,t}}{\max(I_{z,t}, 1)}.
+\]
+Luego se calculó la trayectoria esperada:
+\[
+  \widehat{k}_{z,t} =
+  I_{z,t}
+  \exp\left(
+    \alpha_z - \sum_{j=1}^{p} \beta_j X_{j,z,t-14}
+  \right).
+\]
+La comparación entre curva simulada y curva observada se realizó mediante RMSE
+en escala logarítmica:
+\[
+  d =
+  \sqrt{
+    \frac{1}{T}
+    \sum_t
+    \left[
+      \log(1 + \widehat{k}_{z,t})
+      -
+      \log(1 + \overline{k}_{z,t})
+    \right]^2
+  }.
+\]
+Para cada zona se aceptó el \(5\%\) de simulaciones con menor distancia. Los
+pesos reportados corresponden al conjunto de simulaciones aceptadas.
 
-La utilidad principal de esta comparación radica en que las medidas pueden
-interpretarse como factores que alteran la estructura de contacto entre
-personas o la probabilidad de que un contacto resulte en contagio. Si, por
-ejemplo, una reducción sostenida en la transmisión coincide con periodos de
-mayor uso de mascarillas, restricciones más estrictas de movilidad o aumentos
-en la cobertura de vacunación, el modelo puede capturar ese cambio mediante una
-disminución de la tasa de infección y contrastarlo con la realidad observada.
+\newpage
 
-\subsection{Evaluación de la Efectividad de Medidas}
+\section{Resultados}
 
-Finalmente, el proyecto comparará distintos escenarios temporales y espaciales
-para determinar cuáles medidas parecen asociarse con mejores resultados. No se
-asumirá de entrada que una sola intervención explica toda la dinámica del
-brote; más bien, se analizará cómo distintas medidas, tomadas de forma
-individual o combinada, modifican la evolución de la curva epidémica. La
-interpretación de resultados se apoyará en la proximidad entre las simulaciones
-y los datos reales, así como en la consistencia del comportamiento estimado de
-la tasa de transmisión a lo largo del tiempo.
+\subsection{Series Epidemiológicas}
 
-Este procedimiento permitirá construir una evaluación comparativa con
-fundamento cuantitativo, donde la simulación Monte Carlo funcione como puente
-entre la formulación teórica del contagio y la evidencia empírica disponible.
+La Figura~\ref{fig:series-casos} muestra los casos nuevos observados y su
+promedio móvil de siete días para las zonas analizadas.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{series_casos.png}
+  \caption{Casos nuevos observados y promedio móvil de siete días por zona.}
+  \label{fig:series-casos}
+\end{figure}
+
+\subsection{Curvas Simuladas Aceptadas}
+
+La Figura~\ref{fig:mejores} compara la curva observada suavizada con la mejor
+curva obtenida por calibración Monte Carlo para cada país. La línea vertical
+marca el punto desde el cual existen suficientes días previos para calcular el
+rezago de medidas y los casos infecciosos aproximados.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{mejores_simulaciones.png}
+  \caption{Curva observada y mejor simulación aceptada por zona.}
+  \label{fig:mejores}
+\end{figure}
+
+\subsection{Pesos de Medidas Sanitarias}
+
+La Tabla~\ref{tab:pesos} resume los pesos aceptados para cada medida. La media
+indica el peso promedio dentro del conjunto de simulaciones aceptadas, mientras
+que los percentiles 5 y 95 muestran la dispersión de pesos compatibles con los
+datos bajo esta parametrización.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Pesos aceptados de medidas sanitarias.}
+  \label{tab:pesos}
+  \input{tables/pesos.tex}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.9\textwidth]{pesos_medidas.png}
+  \caption{Resumen gráfico de pesos aceptados por medida sanitaria.}
+  \label{fig:pesos}
+\end{figure}
+
+\subsection{Errores de Ajuste}
+
+La Tabla~\ref{tab:errores} resume el error de la mejor simulación aceptada por
+zona. El \textit{score} logarítmico fue la métrica usada para seleccionar las
+simulaciones aceptadas. La última columna reporta la reducción acumulada
+estimada en un escenario ideal donde todas las medidas seleccionadas se fijan
+en su nivel máximo dentro de la escala normalizada del modelo.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Métricas de ajuste por zona.}
+  \label{tab:errores}
+  \input{tables/errores.tex}
+\end{table}
+
+\subsection{Escenario Ideal de Medidas}
+
+Como ejercicio ilustrativo, se construyó un escenario ideal donde todas las
+medidas sanitarias seleccionadas toman valor normalizado igual a 1. Este
+escenario no representa una política realista ni una predicción causal; funciona
+como una prueba interna del modelo para estimar cuánto disminuiría la curva
+esperada si las medidas con pesos calibrados se aplicaran con máxima intensidad.
+
+La Figura~\ref{fig:ideal-curvas} compara, para cada país, la curva esperada de
+la mejor simulación aceptada con la curva esperada bajo el escenario ideal. La
+Figura~\ref{fig:ideal-reduccion} resume la reducción acumulada estimada por
+zona.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{escenarios_ideales.png}
+  \caption{Comparación entre curva calibrada y escenario ideal de medidas.}
+  \label{fig:ideal-curvas}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.9\textwidth]{reduccion_ideal.png}
+  \caption{Reducción acumulada estimada bajo aplicación ideal de medidas.}
+  \label{fig:ideal-reduccion}
+\end{figure}
+
+\newpage
+
+\section{Discusión}
+
+Los resultados muestran cómo una búsqueda Monte Carlo puede utilizarse para
+explorar el espacio de pesos de medidas sanitarias sin fijar esos pesos de
+antemano. En este avance, las simulaciones aceptadas asignan pesos medios
+diferentes a las medidas seleccionadas, lo que permite construir una
+jerarquización relativa dentro del modelo.
+
+La interpretación debe mantenerse en términos de ajuste y compatibilidad, no de
+causalidad. Un peso alto indica que, bajo la forma funcional propuesta, esa
+medida aparece con mayor frecuencia en combinaciones que reproducen mejor las
+curvas observadas. Sin embargo, esto no prueba que la medida haya causado por sí
+misma una reducción de transmisión. Las medidas sanitarias suelen aplicarse
+juntas, tienen rezagos variables y coinciden con cambios de comportamiento,
+vacunación, variantes virales y diferencias en capacidad de reporte.
+
+Una limitación importante es que el modelo usa los casos infecciosos aproximados
+a partir de la propia serie observada. Por tanto, el ejercicio no debe
+presentarse como pronóstico independiente, sino como calibración de pesos dentro
+de una estructura estocástica inspirada en el modelo de Xie \cite{Xie2020}.
+Aun así, el procedimiento es útil para el objetivo del proyecto: usar Monte
+Carlo para identificar combinaciones de parámetros que hacen más plausible la
+curva observada.
+
+Los escenarios ideales deben interpretarse con la misma cautela. Sirven para
+visualizar la sensibilidad del modelo ante una aplicación máxima de medidas,
+pero no incorporan costos sociales, cumplimiento real, cambios de movilidad,
+agotamiento de la población, variantes virales ni retrasos distintos para cada
+intervención. Por esa razón, las reducciones estimadas son resultados internos
+del modelo y no estimaciones directas de impacto sanitario.
+
+\section{Conclusiones}
+
+Se implementó una calibración Monte Carlo para aproximar pesos relativos de
+medidas sanitarias en curvas nacionales de casos nuevos de COVID-19. El
+procedimiento generó múltiples combinaciones aleatorias de pesos, calculó la
+trayectoria esperada de casos nuevos asociada a cada combinación y conservó las
+simulaciones con menor distancia respecto a los datos observados.
+
+El enfoque permite convertir las medidas sanitarias en variables de calibración
+dentro de un modelo estocástico, y produce un resumen cuantitativo de los pesos
+compatibles con las curvas analizadas. Como trabajo futuro, el modelo podría
+ampliarse con validación fuera de muestra, rezagos estimados por medida y
+parámetros específicos por país o por periodo. También podría extenderse la
+sección de escenarios para comparar aplicaciones parciales de medidas, por
+ejemplo solo movilidad, solo vacunación o combinaciones de medidas de alto peso.
 
 \newpage
 
