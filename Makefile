@@ -1,4 +1,4 @@
-TITLE ?= anteproyecto
+TITLE ?= proyecto
 
 all: $(TITLE).pdf
 
