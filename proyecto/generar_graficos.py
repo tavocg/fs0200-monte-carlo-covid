@@ -58,6 +58,31 @@ POLICY_COLUMNS = {
     "Vacunación": ("H7_Vaccination policy", "H7_Vaccination.policy"),
 }
 
+POLICY_DESCRIPTIONS = {
+    "Cierre escuelas": "Cierre obligatorio en todos los niveles educativos",
+    "Cierre trabajo": "Cierre de lugares de trabajo no esenciales",
+    "Eventos públicos": "Cancelación obligatoria de eventos públicos",
+    "Reuniones": "Restricción máxima a reuniones presenciales",
+    "Quedarse en casa": "Orden estricta de permanencia en casa",
+    "Movilidad interna": "Restricciones obligatorias a movilidad interna",
+    "Viajes internacionales": "Controles máximos a viajes internacionales",
+    "Mascarillas": "Uso obligatorio amplio de mascarillas",
+    "Vacunación": "Disponibilidad máxima o política más intensa registrada",
+}
+
+SCENARIO_DEFINITIONS = {
+    "Escuela/trabajo": ["Cierre escuelas", "Cierre trabajo"],
+    "Movilidad/reuniones": [
+        "Eventos públicos",
+        "Reuniones",
+        "Quedarse en casa",
+        "Movilidad interna",
+        "Viajes internacionales",
+    ],
+    "Salud pública": ["Mascarillas", "Vacunación"],
+    "Todo máximo": list(POLICY_COLUMNS),
+}
+
 
 def read_national_data() -> pd.DataFrame:
     columns = [
@@ -158,6 +183,30 @@ def expected_curve_from_weights(
     return expected
 
 
+def build_scenario_curve(
+    infectious: np.ndarray,
+    policy_matrix: np.ndarray,
+    beta: np.ndarray,
+    alpha: float,
+    start_idx: int,
+    max_cases: float,
+    selected_measures: list[str],
+) -> np.ndarray:
+    scenario_matrix = policy_matrix.copy()
+    label_to_idx = {label: idx for idx, label in enumerate(POLICY_COLUMNS)}
+    for label in selected_measures:
+        scenario_matrix[start_idx:, label_to_idx[label]] = 1.0
+
+    return expected_curve_from_weights(
+        infectious=infectious,
+        policy_matrix=scenario_matrix,
+        beta=beta,
+        alpha=alpha,
+        start_idx=start_idx,
+        max_cases=max_cases,
+    )
+
+
 def score_curve(observed: np.ndarray, expected: np.ndarray, start_idx: int) -> float:
     valid = np.isfinite(expected[start_idx:])
     if not valid.any():
@@ -167,7 +216,9 @@ def score_curve(observed: np.ndarray, expected: np.ndarray, start_idx: int) -> f
     return float(np.sqrt(np.mean((expected_log - observed_log) ** 2)))
 
 
-def calibrate_country(group: pd.DataFrame, rng: np.random.Generator) -> tuple[pd.DataFrame, pd.DataFrame]:
+def calibrate_country(
+    group: pd.DataFrame, rng: np.random.Generator
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     group = group.sort_values("Date").copy()
     policy_cols = [f"policy_{label}" for label in POLICY_COLUMNS]
     policy_matrix = group[policy_cols].shift(POLICY_LAG_DAYS).fillna(0).to_numpy(dtype=float)
@@ -214,16 +265,17 @@ def calibrate_country(group: pd.DataFrame, rng: np.random.Generator) -> tuple[pd
     best_beta = best[list(POLICY_COLUMNS)].to_numpy(dtype=float)
     best_alpha = float(best["alpha"])
     best_curve = curves[int(best["candidate_idx"])]
-    ideal_policy_matrix = policy_matrix.copy()
-    ideal_policy_matrix[start_idx:] = 1.0
-    ideal_curve = expected_curve_from_weights(
+    ideal_curve = build_scenario_curve(
         infectious=infectious,
-        policy_matrix=ideal_policy_matrix,
+        policy_matrix=policy_matrix,
         beta=best_beta,
         alpha=best_alpha,
         start_idx=start_idx,
         max_cases=max_cases,
+        selected_measures=list(POLICY_COLUMNS),
     )
+    top3_indices = np.argsort(best_beta)[-3:][::-1]
+    top3_measures = [list(POLICY_COLUMNS)[idx] for idx in top3_indices]
 
     curve_df = group[
         ["CountryCode", "CountryLabel", "Date", "new_cases", "new_cases_ma7"]
@@ -232,20 +284,55 @@ def calibrate_country(group: pd.DataFrame, rng: np.random.Generator) -> tuple[pd
     curve_df["ideal_expected"] = ideal_curve
     curve_df["start_idx"] = start_idx
     curve_df["best_score"] = float(accepted["score"].iloc[0])
-    return accepted, curve_df
+
+    valid = np.isfinite(best_curve) & (np.arange(len(group)) >= start_idx)
+    baseline_total = float(np.sum(best_curve[valid]))
+    scenario_rows = []
+    scenarios = {**SCENARIO_DEFINITIONS, "Top 3 por país": top3_measures}
+    for scenario_name, measures in scenarios.items():
+        scenario_curve = build_scenario_curve(
+            infectious=infectious,
+            policy_matrix=policy_matrix,
+            beta=best_beta,
+            alpha=best_alpha,
+            start_idx=start_idx,
+            max_cases=max_cases,
+            selected_measures=measures,
+        )
+        scenario_total = float(np.sum(scenario_curve[valid]))
+        reduction = (
+            (baseline_total - scenario_total) / baseline_total * 100
+            if baseline_total > 0
+            else 0.0
+        )
+        scenario_rows.append(
+            {
+                "CountryCode": group["CountryCode"].iloc[0],
+                "Zona": group["CountryLabel"].iloc[0],
+                "Escenario": scenario_name,
+                "Medidas": ", ".join(measures),
+                "Reduccion": reduction,
+            }
+        )
+
+    return accepted, curve_df, pd.DataFrame(scenario_rows)
 
 
-def calibrate_all(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def calibrate_all(
+    data: pd.DataFrame,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     rng = np.random.default_rng(RANDOM_SEED)
     accepted_frames = []
     curve_frames = []
+    scenario_frames = []
     error_rows = []
 
     for country_code in COUNTRY_ORDER:
         group = data[data["CountryCode"].eq(country_code)]
-        accepted, curve = calibrate_country(group, rng)
+        accepted, curve, scenarios = calibrate_country(group, rng)
         accepted_frames.append(accepted)
         curve_frames.append(curve)
+        scenario_frames.append(scenarios)
 
         start_idx = int(curve["start_idx"].iloc[0])
         observed = curve["new_cases_ma7"].to_numpy(dtype=float)
@@ -278,6 +365,7 @@ def calibrate_all(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.Da
     return (
         pd.concat(accepted_frames, ignore_index=True),
         pd.concat(curve_frames, ignore_index=True),
+        pd.concat(scenario_frames, ignore_index=True),
         pd.DataFrame(error_rows),
     )
 
@@ -328,7 +416,45 @@ def write_latex_table(path: Path, headers: list[str], rows: list[list[object]]) 
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
-def write_tables(data: pd.DataFrame, accepted: pd.DataFrame, errors: pd.DataFrame) -> None:
+def make_policy_description_rows(data: pd.DataFrame) -> list[list[object]]:
+    rows = []
+    for label in POLICY_COLUMNS:
+        max_level = data[label].max(skipna=True)
+        max_text = "0" if pd.isna(max_level) else f"{max_level:.0f}"
+        rows.append([label, max_text, POLICY_DESCRIPTIONS[label]])
+    return rows
+
+
+def summarize_scenarios(scenarios: pd.DataFrame) -> pd.DataFrame:
+    rows = []
+    for scenario_name, group in scenarios.groupby("Escenario", sort=False):
+        rows.append(
+            {
+                "Escenario": scenario_name,
+                "Medidas": group["Medidas"].iloc[0],
+                "Reduccion promedio": group["Reduccion"].mean(),
+                "Reduccion minima": group["Reduccion"].min(),
+                "Reduccion maxima": group["Reduccion"].max(),
+            }
+        )
+    order = [
+        "Escuela/trabajo",
+        "Movilidad/reuniones",
+        "Salud pública",
+        "Top 3 por país",
+        "Todo máximo",
+    ]
+    result = pd.DataFrame(rows)
+    result["orden"] = result["Escenario"].map({name: idx for idx, name in enumerate(order)})
+    return result.sort_values("orden").drop(columns="orden")
+
+
+def write_tables(
+    data: pd.DataFrame,
+    accepted: pd.DataFrame,
+    errors: pd.DataFrame,
+    scenarios: pd.DataFrame,
+) -> None:
     TABLES_DIR.mkdir(parents=True, exist_ok=True)
 
     zones = make_zone_table(data)
@@ -346,6 +472,12 @@ def write_tables(data: pd.DataFrame, accepted: pd.DataFrame, errors: pd.DataFram
             ]
             for _, row in zones.iterrows()
         ],
+    )
+
+    write_latex_table(
+        TABLES_DIR / "medidas.tex",
+        ["Medida", "Nivel ideal", "Interpretación usada"],
+        make_policy_description_rows(data),
     )
 
     write_latex_table(
@@ -380,6 +512,21 @@ def write_tables(data: pd.DataFrame, accepted: pd.DataFrame, errors: pd.DataFram
         TABLES_DIR / "pesos.tex",
         ["Medida", "Media", "P5", "P95"],
         weight_rows,
+    )
+
+    scenario_summary = summarize_scenarios(scenarios)
+    write_latex_table(
+        TABLES_DIR / "escenarios.tex",
+        ["Escenario", "Red. prom.", "Red. mín.", "Red. máx."],
+        [
+            [
+                row["Escenario"],
+                f"{row['Reduccion promedio']:.1f}%",
+                f"{row['Reduccion minima']:.1f}%",
+                f"{row['Reduccion maxima']:.1f}%",
+            ]
+            for _, row in scenario_summary.iterrows()
+        ],
     )
 
 
@@ -461,6 +608,23 @@ def plot_ideal_reductions(errors: pd.DataFrame) -> None:
     plt.close(fig)
 
 
+def plot_scenario_reductions(scenarios: pd.DataFrame) -> None:
+    summary = summarize_scenarios(scenarios)
+    fig, axis = plt.subplots(figsize=(9, 5))
+    axis.barh(
+        summary["Escenario"],
+        summary["Reduccion promedio"],
+        color="#2563eb",
+        alpha=0.85,
+    )
+    axis.set_xlabel("Reducción acumulada promedio (%)")
+    axis.grid(True, axis="x", alpha=0.25)
+    fig.suptitle("Reducción estimada por paquete de medidas", fontsize=15)
+    fig.tight_layout()
+    fig.savefig(FIGURES_DIR / "reduccion_por_escenario.png", dpi=180)
+    plt.close(fig)
+
+
 def plot_weight_summary(accepted: pd.DataFrame) -> None:
     summary = []
     for label in POLICY_COLUMNS:
@@ -500,14 +664,16 @@ def write_outputs(
     data: pd.DataFrame,
     accepted: pd.DataFrame,
     curves: pd.DataFrame,
+    scenarios: pd.DataFrame,
     errors: pd.DataFrame,
 ) -> None:
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
-    write_tables(data, accepted, errors)
+    write_tables(data, accepted, errors, scenarios)
     plot_series_cases(data)
     plot_best_curves(curves)
     plot_ideal_scenarios(curves)
     plot_ideal_reductions(errors)
+    plot_scenario_reductions(scenarios)
     plot_weight_summary(accepted)
 
 
@@ -520,9 +686,9 @@ def main() -> None:
         f"Evaluando {N_CANDIDATES} combinaciones aleatorias de pesos por zona "
         f"y aceptando el {ACCEPTANCE_RATE:.0%} con menor error..."
     )
-    accepted, curves, errors = calibrate_all(data)
+    accepted, curves, scenarios, errors = calibrate_all(data)
     print("Escribiendo figuras y tablas...")
-    write_outputs(data, accepted, curves, errors)
+    write_outputs(data, accepted, curves, scenarios, errors)
     print(f"Listo. Figuras en {FIGURES_DIR} y tablas en {TABLES_DIR}.")
 
 

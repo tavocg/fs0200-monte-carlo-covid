@@ -246,6 +246,18 @@ Cada variable se normalizó entre 0 y 1 dentro de cada zona, dividiendo por su
 máximo observado. Luego se aplicó un rezago de 14 días antes de incorporarla al
 modelo.
 
+La Tabla~\ref{tab:medidas} traduce el nivel ideal usado para cada medida a una
+descripción cualitativa. Esta traducción permite interpretar los escenarios no
+solo como valores numéricos normalizados, sino como paquetes concretos de
+intervención dentro de la codificación de OxCGRT.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Interpretación de niveles ideales de medidas sanitarias.}
+  \label{tab:medidas}
+  \resizebox{\textwidth}{!}{\input{tables/medidas.tex}}
+\end{table}
+
 \subsection{Calibración Monte Carlo de Pesos}
 
 Para cada zona se generaron \(1500\) candidatos de pesos:
@@ -282,6 +294,27 @@ en escala logarítmica:
 \]
 Para cada zona se aceptó el \(5\%\) de simulaciones con menor distancia. Los
 pesos reportados corresponden al conjunto de simulaciones aceptadas.
+
+\subsection{Construcción de Escenarios Interpretables}
+
+Con los pesos de la mejor simulación aceptada se construyeron escenarios
+hipotéticos de aplicación de medidas. En cada escenario, un subconjunto de
+medidas se fija en su nivel ideal, es decir, valor normalizado igual a 1,
+mientras las demás permanecen como fueron observadas en los datos. Se analizaron
+los siguientes paquetes:
+
+\begin{itemize}
+  \item \textbf{Escuela/trabajo}: cierre de escuelas y lugares de trabajo.
+  \item \textbf{Movilidad/reuniones}: eventos públicos, reuniones, permanencia
+        en casa, movilidad interna y viajes internacionales.
+  \item \textbf{Salud pública}: mascarillas y vacunación.
+  \item \textbf{Top 3 por país}: las tres medidas con mayor peso estimado en
+        cada país.
+  \item \textbf{Todo máximo}: todas las medidas seleccionadas en su nivel ideal.
+\end{itemize}
+
+La reducción acumulada esperada se calculó comparando la suma de casos esperados
+en la curva calibrada con la suma de casos esperados bajo cada escenario.
 
 \newpage
 
@@ -334,7 +367,7 @@ datos bajo esta parametrización.
   \label{fig:pesos}
 \end{figure}
 
-\subsection{Errores de Ajuste}
+\subsection{Errores de Ajuste y Escenario Ideal}
 
 La Tabla~\ref{tab:errores} resume el error de la mejor simulación aceptada por
 zona. El \textit{score} logarítmico fue la métrica usada para seleccionar las
@@ -348,8 +381,6 @@ en su nivel máximo dentro de la escala normalizada del modelo.
   \label{tab:errores}
   \input{tables/errores.tex}
 \end{table}
-
-\subsection{Escenario Ideal de Medidas}
 
 Como ejercicio ilustrativo, se construyó un escenario ideal donde todas las
 medidas sanitarias seleccionadas toman valor normalizado igual a 1. Este
@@ -374,6 +405,27 @@ zona.
   \includegraphics[width=0.9\textwidth]{reduccion_ideal.png}
   \caption{Reducción acumulada estimada bajo aplicación ideal de medidas.}
   \label{fig:ideal-reduccion}
+\end{figure}
+
+\subsection{Escenarios Parciales}
+
+La Tabla~\ref{tab:escenarios} y la Figura~\ref{fig:escenarios} comparan
+paquetes interpretables de medidas sanitarias. Esta comparación permite leer el
+resultado de forma más concreta: no solo como ``todas las medidas al máximo'',
+sino como grupos de acciones que podrían corresponder a estrategias distintas.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Reducción acumulada estimada por paquete de medidas.}
+  \label{tab:escenarios}
+  \input{tables/escenarios.tex}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.9\textwidth]{reduccion_por_escenario.png}
+  \caption{Reducción promedio estimada por escenario interpretable.}
+  \label{fig:escenarios}
 \end{figure}
 
 \newpage
@@ -409,6 +461,14 @@ agotamiento de la población, variantes virales ni retrasos distintos para cada
 intervención. Por esa razón, las reducciones estimadas son resultados internos
 del modelo y no estimaciones directas de impacto sanitario.
 
+Los escenarios parciales vuelven el resultado más legible porque agrupan medidas
+en estrategias reconocibles. Por ejemplo, el escenario de movilidad y reuniones
+representa restricciones directas sobre contacto presencial, mientras que el
+escenario de salud pública representa medidas preventivas menos ligadas al
+cierre de actividades. Aun así, estas agrupaciones son construcciones del
+modelo; no sustituyen una evaluación epidemiológica, económica o social de
+políticas reales.
+
 \section{Conclusiones}
 
 Se implementó una calibración Monte Carlo para aproximar pesos relativos de
@@ -421,9 +481,7 @@ El enfoque permite convertir las medidas sanitarias en variables de calibración
 dentro de un modelo estocástico, y produce un resumen cuantitativo de los pesos
 compatibles con las curvas analizadas. Como trabajo futuro, el modelo podría
 ampliarse con validación fuera de muestra, rezagos estimados por medida y
-parámetros específicos por país o por periodo. También podría extenderse la
-sección de escenarios para comparar aplicaciones parciales de medidas, por
-ejemplo solo movilidad, solo vacunación o combinaciones de medidas de alto peso.
+parámetros específicos por país o por periodo.
 
 \newpage
 
